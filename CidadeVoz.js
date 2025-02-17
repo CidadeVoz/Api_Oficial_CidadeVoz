@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 2 * 1024 * 1024 }
+    limits: { fileSize: 2 * 1024 * 1024, files: 1 }
 })
 
 const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
@@ -31,10 +31,7 @@ const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
 })
 
 
-
-
-
-
+db.new( "" )
 
 
 
