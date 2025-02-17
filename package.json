@@ -5,7 +5,7 @@
   "license": "ISC",
   "author": "Lucas Camargo de Andrade",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "CidadeVoz.js",
   "scripts": {
     "test": "node ."
   },

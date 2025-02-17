@@ -1,9 +1,34 @@
 const express = require("express");
-const sqlite3 = require("sqlite3");
+const sqlite3 = require("sqlite3").verbose();
 const multer = require("multer");
 const ws = require("ws");
 
+
 const app = express();
+app.use(express.json())
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads/images/')
+    },
+    filename: function (req, file, cb) {
+        file
+        cb(null, file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 2 * 1024 * 1024 }
+})
+
+const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
+     if (err) {
+        console.error("Erro ao Conectarr com o banco de Dados: ", err.message);
+     }else{
+        console.log("Banco de Dados Criado Com Sucesso!")
+     }
+})
 
 
 
@@ -20,8 +45,13 @@ const app = express();
 
 
 
-
-
+app.post('/upload', upload.single('image'), (req, res) => {
+    if (req.file) {
+        res.send('Imagem Carregada Com Sucesso!')
+    }else{
+        res.status(400).send('Erro ao Carregar a Imagem.')
+    }
+} )
 
 
 
