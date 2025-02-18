@@ -47,10 +47,6 @@ app.post('/register', async (req, res)=> {
         res.status(400).send("Erro nas Informações Enviadas!")
     }
 
-    bcrypt.hash( body.Senha , saltRounds, function(err, hash) {
-        if (err) throw err;
-        console.log(hash);
-      });
       
     db.run( "INSERT INTO registros VALUES(?,?,?)", [ body.CPF, body.Senha, JSON.stringify( body.Configs ) ], (err, row) => {
         if (err) {
