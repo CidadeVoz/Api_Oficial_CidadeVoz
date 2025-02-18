@@ -2,6 +2,7 @@ const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const multer = require("multer");
 const ws = require("ws");
+const bcrypt = require('bcrypt')
 
 
 const app = express();
@@ -31,24 +32,43 @@ const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
 })
 
 
-db.new( "" )
+
+const CreateDataBases = async () => { 
+    await db.run("CREATE TABLE IF NOT EXISTS registros ( CPF INTERGET PRIMARY KEY UNIQUE, Senha TEXT NOT NULL , Configs TEXT ) ");
+}
+const aaa = CreateDataBases();
 
 
 
 
-
-
-
-
-
-
-app.post('/upload', upload.single('image'), (req, res) => {
-    if (req.file) {
-        res.send('Imagem Carregada Com Sucesso!')
-    }else{
-        res.status(400).send('Erro ao Carregar a Imagem.')
+app.post('/register', async (req, res)=> {
+    const body = req.body;
+    if (!body) {
+        res.status(400).send("Erro nas Informações Enviadas!")
     }
-} )
+
+    bcrypt.hash( body.Senha , saltRounds, function(err, hash) {
+        if (err) throw err;
+        console.log(hash);
+      });
+      
+    db.run( "INSERT INTO registros VALUES(?,?,?)", [ body.CPF, body.Senha, JSON.stringify( body.Configs ) ], (err, row) => {
+        if (err) {
+            res.status(400).send("Erro ao se Cadastrar!")
+        }else {
+            res.status(200).send('Usuário Cadastrado com Sucesso!')
+        }
+    } )
+})
+
+
+// app.post('/upload', upload.single('image'), (req, res) => {
+//     if (req.file) {
+//         res.send('Imagem Carregada Com Sucesso!')
+//     }else{
+//         res.status(400).send('Erro ao Carregar a Imagem.')
+//     }
+// } )
 
 
 
