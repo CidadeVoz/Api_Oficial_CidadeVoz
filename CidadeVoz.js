@@ -36,7 +36,8 @@ const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
 const CreateDataBases = async () => { 
     await db.run("CREATE TABLE IF NOT EXISTS registros ( CPF INTERGET PRIMARY KEY UNIQUE, Senha TEXT NOT NULL , Configs TEXT ) ");
 }
-const aaa = CreateDataBases();
+
+CreateDataBases();
 
 
 
@@ -53,6 +54,21 @@ app.post('/register', async (req, res)=> {
             res.status(400).send("Erro ao se Cadastrar!")
         }else {
             res.status(200).send('Usuário Cadastrado com Sucesso!')
+        }
+    } )
+})
+
+app.post('/login', async (req, res) => {
+    const body = req.body
+    if ( !body ){
+        res.status(400).send("Erro nas Informações Enviadas!");
+    }
+    console.log(body)
+    db.get( "SELECT * FROM registros WHERE CPF = ? AND Senha = ?", [ body.CPF, body.Senha ], (err, row) => {
+        if (err) {
+            res.status(400).send('CPF e/ou Senha Inválido')
+        }else {
+            res.status(200).send(row)
         }
     } )
 })
