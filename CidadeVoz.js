@@ -99,13 +99,32 @@ app.post('/login', async (req, res) => {
 
 
 //Vereadores ----------------------------------------------------
+
+
 app.post('/getvereadores', async (req, res) => {
-    res.send("Ok")
+    db.all("SELECT * FROM registros", [] , (err, row) => {
+        let vereadores = []
+        for ( let i = 0; i < row.length; i++ ){
+            let config_json = JSON.parse( row[i].Configs )  
+            if ( config_json.Tipo === "Sou Vereador" ){
+                vereadores.push( row[i] );
+            }
+        }
+        if ( vereadores.length > 0  ) {
+            res.status(200).json(vereadores)  
+        }else {
+            res.status(400).json( { message: "Nenhum Vereador encontrado na database!" } )
+        }
+    })
 })
 
 
 app.post('/getvereadorbycpf', async (req, res) => {
-    res.send('Ola Mundo')
+    const body = req.body;
+    if (!body){
+        return;
+    }
+    res.json( { message: "Um vereador ai ggzada" } )
 })
 
 //Vereadores ----------------------------------------------------
