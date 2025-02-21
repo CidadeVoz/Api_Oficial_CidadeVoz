@@ -128,6 +128,16 @@ app.post('/getvereadorbycpf', async (req, res) => {
     res.json( { message: "Um vereador ai ggzada" } )
 })
 
+app.get('/periodos', async (req, res) => {
+    db.all("SELECT * FROM periodos", [], (err, row) => {
+        if (err){
+            res.status(400).json({message: "Erro ao recolher os periodos"})
+        }else{
+            res.status(200).json(row);
+        }
+    })
+})
+
 //Vereadores ----------------------------------------------------
 
 
