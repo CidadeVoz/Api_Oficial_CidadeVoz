@@ -90,11 +90,11 @@ app.post('/login', async (req, res) => {
         res.status(400).send("Erro nas Informações Enviadas!");
     }
     console.log(body)
-    db.get( "SELECT * FROM registros WHERE CPF = ? AND Senha = ?", [ body.CPF, body.Senha ], (err, row) => {
+    db.all( "SELECT * FROM registros WHERE CPF = ? AND Senha = ?", [ body.CPF, body.Senha ], (err, row) => {
         if (err) {
-            res.status(400).send('CPF e/ou Senha Inválido')
+            res.status(400).json('CPF e/ou Senha Inválido')
         }else {
-            res.status(200).send(row)
+            res.status(200).json(row)
         }
     } )
 })
