@@ -35,33 +35,31 @@ const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
 
 const createYearTable = async () => {
 
-    const table_year = await db.run("CREATE TABLE IF NOT EXISTS periodos ( ano INTERGER PRIMARY KEY UNIQUE, vereadores TEXT ) ")
+    let Ano = 2000;
+    const Ano_atual = new Date().getFullYear();
+    while ( Ano < Ano_atual ){
+        Ano = Ano + 4; 
+    }
+    const Correct_Year = ( Ano - 4 );
 
-    if ( table_year ) { 
-
-        let Ano = 2000;
-        const Ano_atual = new Date().getFullYear();
-        while ( Ano < Ano_atual ){
-            Ano = Ano + 4; 
-        }
-        const Correct_Year = ( Ano - 4 );
-
-        const Has_Insert = await db.get("SELECT * FROM periodos WHERE ano = ?", [ Correct_Year ])
-
-        if( Has_Insert ){
+     db.get("SELECT * FROM periodos WHERE ano = ?", [ Correct_Year ], ( err, row ) => {
+        if(err){
             return false;
-        } else {
-            const response = await db.run("INSERT INTO periodos VALUES (?,?) ",  [ Correct_Year, JSON.stringify([])  ] )
-            if ( response ) {
-                return true;
+        }else{
+            if ( !row ) {
+                db.run("INSERT INTO periodos VALUES (?,?) ",  [ Correct_Year, JSON.stringify([])  ] )
             }
         }
-    }
+     })
+
 }
 
 const CreateDataBases = async () => { 
     await db.run("CREATE TABLE IF NOT EXISTS registros ( CPF INTERGER PRIMARY KEY UNIQUE, Senha TEXT NOT NULL , Configs TEXT ) ");
-    await createYearTable();
+    const table_year = await db.run("CREATE TABLE IF NOT EXISTS periodos ( ano INTERGER PRIMARY KEY UNIQUE, vereadores TEXT ) ")
+    if ( table_year ) { 
+        await createYearTable();
+    }
 }
 
 CreateDataBases();
