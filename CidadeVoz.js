@@ -4,24 +4,40 @@ const multer = require("multer");
 const ws = require("ws");
 const http = require("http")
 const bcrypt = require('bcrypt')
+const fs = require("fs")
+const mime = require("mime-types")
+const path = require("path")
+
+
 
 
 const app = express();
 app.use(express.json())
+app.use('/uploads/images', express.static(path.join(__dirname, 'uploads/images')));
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './uploads/images/')
     },
     filename: function (req, file, cb) {
-        file
         cb(null, file.originalname);
     }
 });
 
+const fileFilter = (req, file, cb) => {
+    const mimeType = mime.lookup(file.originalname);
+    if (mimeType && mimeType.startsWith('image/')) { 
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 2 * 1024 * 1024, files: 1 }
+    limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+    fileFilter: fileFilter
+
 })
 
 const db = new sqlite3.Database('./db/CidadeVoz_Banco.db', (err) => {
@@ -143,15 +159,62 @@ app.get('/periodos', async (req, res) => {
 
 //Vereadores ----------------------------------------------------
 
+// Imagens -----------------------------------------------------
+
+const upload_Person = (CPF, Configs) => {
+    db.run("UPDATE registros SET Configs = ? WHERE CPF = ?", [ Configs, CPF ], (err, row) => {
+        if (err) {
+            return false;
+        }
+    } )
+    return true;
+}
+
+app.post('/upload_person_file', upload.single('image'), (req, res) => {
+    if (req.file) {
+        const body = req.body;
+        if (body.CPF) {
+            db.get("SELECT Configs FROM registros WHERE CPF = ?", [body.CPF], (err, row) => {
+                if (err) {
+                    console.error('Erro ao consultar o banco de dados:', err);
+                    return res.status(500).send('Erro interno no servidor.');
+                }
+
+                if (row) {
+
+                    let updated_image = JSON.parse( row.Configs )
+                    updated_image.Image = req.file.originalname || "N/A"
+
+                    const has_updated = upload_Person( body.CPF, JSON.stringify(updated_image) )
+
+                    if ( has_updated ){
+                        return res.status(200).send("Imagem Alterada Com Sucesso!");
+                    }
+                } else {
+                    return res.status(404).send('CPF não encontrado.');
+                }
+            });
+        }
+    } else {
+        res.status(400).send('Erro ao Carregar a Imagem.');
+    }
+});
 
 
-// app.post('/upload', upload.single('image'), (req, res) => {
-//     if (req.file) {
-//         res.send('Imagem Carregada Com Sucesso!')
-//     }else{
-//         res.status(400).send('Erro ao Carregar a Imagem.')
-//     }
-// } )
+
+app.get('/get_person_image/:imageName', (req, res) => {
+    const imageName = req.params.imageName;
+
+    const imagePath = path.join(__dirname, 'uploads/images', imageName);
+
+    fs.exists(imagePath, (exists) => {
+        if (exists) {
+            res.sendFile(imagePath);
+        } else {
+            res.status(404).send('Imagem não encontrada');
+        }
+    });
+});
 
 
 
